@@ -904,7 +904,7 @@
 
 <body>
 
-    <audio id="bg-music" src="MUSIC.mp3"></audio>
+    <audio id="bg-music" src="MUSIC.mp3" loop preload="auto"></audio>
     <audio id="countdown-audio" src="10s.mp3"></audio>
     <canvas id="bg-canvas"></canvas>
     <canvas id="game-canvas"></canvas>
@@ -1308,6 +1308,14 @@
             // Simple approach: Play audio loop or single file
             countdownAudio.play().catch(e => console.log("Countdown audio failed:", e));
 
+            // --- CRITICAL FIX: Pre-play BG Music Silently ---
+            // To ensure MUSIC.mp3 works exactly like 10s.mp3, we MUST start it HERE (with 10s.mp3).
+            // We set volume to 0 so it doesn't overlap, then unmute later.
+            if (bgMusic) {
+                bgMusic.volume = 0;
+                bgMusic.play().catch(e => console.log("Bg music pre-start failed:", e));
+            }
+
             const timer = setInterval(() => {
                 timeLeft--;
                 if (timeLeft > 0) {
@@ -1322,7 +1330,10 @@
                     document.querySelectorAll('.lantern-container').forEach(el => el.style.display = 'flex');
                     document.querySelectorAll('.firecracker-string').forEach(el => el.style.display = 'flex');
 
-                    // Play Music
+                    // Play Music (Unmute)
+                    // The music is already playing (silently), so we just turn up the volume.
+                    bgMusic.volume = 1.0;
+                    bgMusic.currentTime = 0; // Restart from beginning
                     bgMusic.play().catch(e => console.log("Audio play failed:", e));
 
                     // Trigger fireworks immediately with HNY
